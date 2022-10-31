@@ -1,0 +1,88 @@
+C에서는 삼항 연산자(?:)와 함께 if, if else, switch가 문장의 선택을 구현한다.
+C에서는 break, continue, goto가 프로그램의 한 위치에서 다른 위치로 프로그램의 흐름을 점프시키는 제어를 구현한다.
+
+(1) if, else
+if문은 검사 조건을 사용하여, 검사 조건 뒤에 오는 하나의 단일문 또는 단일블록(복합문)을 실행할 것인지 말것인지를 결정한다.
+-.	if (expression)
+		statement
+
+if else문은 양자 택일을 할 수 있게 한다.
+-.	if (expression)
+		statement1
+	else
+		statement2
+
+else 바로 뒤에 또 다른 if문을 사용하면, 다수에서 하나를 선택하는 구조를 만들 수 있다.
+-.	if (expression1)
+		statement1
+	else if (expression2)
+		statement2
+	else
+		statement3
+
+중괄호로 특별히 달리 표시하지 않는다면, else는 가장 가까운 if와 짝을 이루는 것이 규칙이다.
+아래 예제에서의 else는 2번째 if문과 짝지어지므로, if~else를 사용할 때 유의하여야 한다.
+ex) if (expression1)
+		if (expression2)
+			statement1
+	else
+		statement2
+
+(2) 논리연산자
+논리 연산자는 일반적으로 관계 표현식을 피연산자로 취한다.
+논리 연산자는 관계 연산자보다 연산순위가 낮다. 그래서 부가적인 괄호로 부표현식을 묶을 필요가 없다. 단, !(NOT)은 우선순위가 매우 높다.
+
+논리 표현식은 왼쪽에서 오른쪽으로 평가된다. 그리고, 전체 표현식을 거짓으로 만드는 요소가 발견되는 즉시 평가를 멈춘다.
+&&(AND)와 ||(OR) 연산자는 시퀀스 포인트이다. 그래서, 프로그램이 하나의 피연산자에서 다음 피연산자로 넘어가기 전에 모든 부작용(side effect)이 완수된다.
+
+(3) 삼항연상자
+삼항 연산자(?:)는 if else문을 좀더 간결하게 처리할 수 있는 대안을 제공하는 표현식이다.
+
+(4) switch
+switch문은, 정수값을 가지는 레이블이 붙어 있는 연속된 문장들에서 선택할 수 있게 한다.
+break문으로 프로그램의 흐름을 바꾸지 않는 한, 나머지 모든 문장들을 차례대로 실행한다.
+
+expression 부분과 case 레이블은 모두 정수값이어야 한다.
+레이블은 상수 또는 상수로만 이루어진 표현식이어야 한다.
+expression 부분의 값과 일치하는 case 레이블이 없으면, default 레이블로 넘어간다.
+-. switch (expression)
+   {
+	   case label1:	statement1
+	   case	label2:	statement2
+	   default:	statement3
+   }
+
+(5) 점프문
+break, continue, goto는 프로그램의 한 위치에서 다른 위치로 프로그램의 흐름을 점프시킨다.
+
+break문은, break가 들어 있는 루프 또는 switch의 끝에 이어지는 다음 문장으로 점프하게 만든다.
+continue문은, continue가 들어 있는 루프의 나머지를 건너뛰고 다음 루프 사이클을 시작하게 만든다.
+
+while loop의 경우에, continue문 이후에 수행하는 다음 동작은 루프 검사 표현식을 평가하는 것이다.
+for loop의 경우에, continue문 이후에 수행하는 다음 동작은 갱신 표현식을 평가하고, 이어서 루프 검사 표현식을 평가하는 것이다.
+
+(6) C 프로그래밍 스타일 예제
+a. while ((ch = getchar()) != '\n')
+	=> 값을 ch에 대입하고, 그 값을 개행문자와 비교하는 2가지 동작을 하나의 표현식으로 결합하였다.
+	=> 이 표현식을 평가하기 위해, 컴퓨터는 먼저 getchar() 함수를 호출하고 함수의 리턴값을 ch에 대입한다.
+	   대입 표현식의 최종값은 좌변의 값이기 때문에, ch = getchar()의 값은 ch가 방금 새로 얻은 값이다.
+	   그러므로, ch를 읽은 후의 검사 조건은 ch != '\n'이 된다.
+
+b. for (div = 2, isPrime = true; (div * div) <= num; div++)
+   {
+	   if (num % div == 0)
+	   {
+		   if ((div * div) != num)
+			   // div는 약수, num / div도 약수
+   		   else
+   			   // div만 약수
+		   isPrime = false;
+	   }
+   }
+   if (isPrime)
+	   // num은 소수
+   else
+	   // num은 합성수
+
+	=> 어떤 정수의 약수들을 구하고자 할 때에는, num의 제곱근까지만 검사하면 loop를 절반으로 줄일 수 있다.
+	   그리고, 소수 여부를 확인하고자 한다면 플래그(flag)를 활용하여 구현할 수 있다.
