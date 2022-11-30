@@ -64,7 +64,7 @@ C++의 함수는 참조나 포인터를 리턴하지 않는 이상, 값을 복�
 
 상수 참조로 리턴하면 아래와 같은 상황을 피할 수 있으며, 사용자는 일반적으로 함수 리턴 값이 rvalue일 것이라고 기대할 것이기 때문이다.
 -.	const free_throws&	accumulate(free_throws& target, const free_throws& source);
--.	accumulate(dup, five) = four;	// 변경 가능한 lvalue로 사용할수 없다.
+-.	accumulate(dup, five) = four;	// 변경 가능한 lvalue로 사용할 수 없다.
 
 (5) 디폴트 매개변수
 C++의 함수 원형은 매개변수에 대한 디폴트 값을 사용자가 정의할 수 있게 허용한다.
@@ -79,12 +79,12 @@ C++의 함수 원형은 매개변수에 대한 디폴트 값을 사용자가 정
 함수의 시그니처를 다르게 하면 같은 이름의 두 함수를 정의할 수 있다. 이 것을 함수 다형 혹은 함수 오버로딩이라 한다.
 
 오버로딩 참조 매개변수는 다음과 같이 매치된다.
--.	void	staff(double &rs);		// 변경 가능한 lvalue와 매치된다.
--.	void	staff(const double &rcs);	// rvalue와 const lvalue와 매치된다.
+-.	void	staff(double& rs);		// 변경 가능한 lvalue와 매치된다.
+-.	void	staff(const double& rcs);	// rvalue와 const lvalue와 매치된다.
 
--.	void	stove(double &r1);		// 변경 가능한 lvalue와 매치된다.
--.	void	stove(const double &r2);	// const lvalue와 매치된다.
--.	void	stove(double &&r3);		// rvalue와 매치된다. (C++11)
+-.	void	stove(double& r1);		// 변경 가능한 lvalue와 매치된다.
+-.	void	stove(const double& r2);	// const lvalue와 매치된다.
+-.	void	stove(double&& r3);		// rvalue와 매치된다. (C++11)
 
 함수 오버로딩은 서로 다른 데이터형을 대상으로 하지만 기본적으로는 같은 작업을 수행하는 함수들에만 사용하는 것이 바람직하다.
 만일, 디폴트 매개변수를 사용하여 같은 목적을 수행할 수 있다면, 하나의 함수를 사용하는 것이 더 간단하다.
