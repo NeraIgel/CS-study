@@ -25,7 +25,7 @@ ex)	Time	operator+(const Time& lhs, const Time& rhs);
 연산자 오버로딩 중에서 가장 유용한 것 중의 하나는, << 연산자를 정의하여 cout과 함께 사용함으로써 어떤 객체의 내용을 출력하는 것이다.
 ostream 객체가 첫 번째 피연산자가 되게 하려면, 이 연산자 함수를 비멤버 함수로 정의해야 한다. 오버로딩된 << 연산자가 그 자체와 연결되게 하려면 ostream& 형을 리턴형으로 사용해야 한다.
 다음은 이와 같은 요구 사항을 만족시키는 일반적인 형식이다.
--.	ostream&	operator<<(ostream& os, const ClassName& obj)
+-.	std::ostream&	operator<<(std::ostream& os, const ClassName& obj)
 	{
 		os << ... ;	// 객체의 내용을 출력한다.
 		return (os);
@@ -58,7 +58,7 @@ ex)	namespace VECTOR
 
 			Vector	operator+(const Vector& rhs) const;
 			Vector	operator-(const Vecotr& rhs) const;
-			Vector	operator-(void) const;
+			Vector	operator-() const;
 			Vector	operator*(double n) const;
 
 			friend Vector	operator*(double n, const Vector& v);
