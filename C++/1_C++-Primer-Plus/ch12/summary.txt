@@ -1,0 +1,255 @@
+객체는 자동 수명, 정적 수명, 할당된 수명, 쓰레드 수명(C++11) 등을 가질 수 있다.
+객체의 데이터 멤버들이 자동 수명을 가진다면, 객체의 생성과 소멸 시점에 맞물려서 데이터 멤버들도 기억 공간이 할당되고 해제된다.
+
+객체의 데이터 멤버들이 정적 수명이나 할당된 수명을 가진다면, 별도의 기억 공간에서 관리되므로, 몇 가지 추가적인 일련의 단계가 필요하다.
+예를 들면, 소멸자와 모든 생성자들이 어울리게 수정해야 하며, 초기화와 대입을 사용할 수 있도록 부가적인 클래스 메서드를 작성하는 등 일련의 절차를 밟아야 한다.
+
+(1) 특별 멤버 함수
+C++ 컴파일러는 다음과 같은 어떤 public 멤버 함수들을 자동으로 제공한다.
+-. 디폴트 생성자		// 생성자를 전혀 정의하지 않았을 경우
+-. 디폴트 소멸자		// 정의하지 않았을 경우
+-. 복사 생성자		// 정의하지 않았을 경우
+-. 복사 대입 연산자		// 정의하지 않았을 경우
+-. 주소 연산자		// 정의하지 않았을 경우
+-. 이동 생성자		// C++11
+-. 이동 대입 연산자		// C++11
+
+암시적 디폴트 생성자와 암시적 디폴트 소멸자는 비정적 데이터 멤버들의 디폴트 생성자와 소멸자를 호출한다. 이 경우, 자동 수명을 가지는 데이터 멤버들은 불확실한 값으로 초기화된다.
+암시적 복사 생성자는 정적 멤버를 제외한 데이터 멤버들을 멤버별로 복사하여 초기화한다. (멤버별 초기화 또는 얕은 복사라고 부른다.)
+암시적 복사 대입 연산자는 정적 멤버를 제외한 데이터 멤버들을 멤버별로 복사한다. (멤버별 복사 또는 얕은 복사라고 부른다.)
+암시적 주소 연산자는 호출한 객체(즉, this 포인터의 값)의 주소를 리턴한다.
+
+(2) 객체 복사 함수
+복사 생성자(Copy constructor)는 동일한 클래스형의 객체를 매개변수로 사용하는 생성자이다. 일반적으로, 그와 같이 선언된 매개변수는 그 클래스형에 대한 const 참조이다.
+복사 생성자는 다음과 같은 상황에서 사용된다.
+-. 새 객체를 동일한 클래스형의 기존 객체로 초기화할 때
+-. 객체가 함수에 값으로 전달될 때
+-. 함수가 객체를 값으로 리턴할 때
+-. 컴파일러가 임시 객체를 생성할 때
+
+복사 대입 연산자(Copy assignment operator)는 어떤 객체를 동일한 클래스형의 다른 객체에 대입할 때 사용하는 연산자 함수이다. 일반적으로, 이 함수는 호출한 객체에 대한 참조를 리턴한다.
+복사 대입 연산자가 자기 대입을 방지하면서 예외 안전성도 확보하려면, 다음과 같은 방법들을 사용할 수 있다.
+-. 호출한 객체의 주소(즉, this 포인터)와 복사대상 객체의 주소를 비교
+-. 예외가 발생할 수 있는 문장의 순서를 적절히 조정
+-. 복사 후 맞바꾸기 기법 등을 사용
+
+(3) 멤버 초기화 리스트(member initializer list)
+생성자를 호출하면 생성자의 본문이 실행되기 전에 객체가 먼저 생성된다. 그리고, 객체의 초기화는 객체가 생성될 떄 이루어진다.
+따라서, 객체의 데이터 멤버들은 생성자의 본문이 실행되기 전에 초기화되어야 한다.
+
+멤버 초기화 리스트는 데이터 멤버들을 초기화하는데 사용할 수 있는, 생성자만의 특별한 형식이다.
+멤버 초기화 리스트는 예를 들어 아래와 같이 사용할 수 있다.
+ex)	class Vector {
+	public:
+		Vector();
+		Vector(double x, double y);
+	private:
+		double	_x;
+		double	_y;
+	};
+
+	Vector::Vector() : _x(0.0), _y(0.0)
+	{}
+
+	Vector::Vector(double x, double y) : _x(x), _y(y)
+	{}
+
+데이터 멤버들을 초기화 리스트에 나열할 때에는, 클래스에 각 데이터 멤버가 선언된 순서와 동일하게 맞추는 것이 권장된다.
+데이터 멤버들이 초기화 리스트에 나열된 순서가 아니라, 클래스 선언에 선언된 순서대로 초기화되기 때문이다.
+데이터 멤버 중, 비정적 상수 멤버와 참조 멤버는 이 형식을 사용해야만 하고 포인터 멤버에도 유용하다.
+
+(4) 정적 수명을 가지는 멤버를 포함하는 클래스
+정적 데이터 멤버는 클래스 사용 범위를 가지지만 클래스 선언 바깥에서 정의되는 멤버로써, 클래스의 모든 객체들에 필요한 공통적인 정보를 저장해야 할 때 유용하다.
+정적 데이터 멤버는 생성되는 객체 수와 상관없이 단 하나만 만들어지며, 클래스의 모든 객체들이 공유하는 멤버이다.
+정적 데이터 멤버는 생성되는 개별 객체들에 포함되지 않는다.
+
+정적 데이터 멤버를 사용하기 위해서는, 다음과 같이 클래스 선언 안에서 static 키워드를 붙여서 선언하고, 클래스 바깥에서 정의한다.
+정적 데이터 멤버를 사용하기 위해서는, 아래와 같이 복사 생성자와 복사 대입 연산자를 명시적으로 정의해야 올바르게 동작한다.
+ex)	class MyString {
+	public:
+		MyString();
+		MyString(const MyString& rhs);
+		MyString& operator=(const MyString& rhs);
+		~MyString();
+	private:
+		static std::size_t	_numStrings;
+	};
+
+	std::size_t	MyString::_numStrings = 0;	// 정적 데이터 멤버의 정의는 클래스 선언 파일이 아니라, 클래스 메서드 구현 파일에 넣는다.
+
+	MyString::MyString()						{ ++_numStrings; }
+	MyString::MyString(const MyString& rhs)				{ ++_numStrings; }
+	MyString&	MyString::operator=(const MyString& rhs)	{ return (*this); }
+	MyString::~MyString()						{ --_numStrings; }
+
+정적 멤버 함수는 개별 객체에 의해 호출될 필요가 없는 멤버 함수이다. 정적 멤버 함수는 this 포인터를 가지지 않는다.
+정적 멤버 함수는 특정 객체와도 결합하지 않기 때문에, 정적 데이터 멤버들만 사용할 수 있다.
+ex)	class MyString {
+	public:
+		static std::size_t	HowMany();
+	};
+
+	std::size_t	MyString::HowMany()
+	{}
+
+	MyString	str;
+	std::size_t	count;
+
+	count = str.HowMany();
+	count = MyString::HowMany();
+
+(5) 할당된 수명을 가지는 멤버를 포함하는 클래스
+포인터 멤버를 가지는 클래스는 생성자에서 new 연산자를 사용하고 소멸자에서 delete 연산자를 사용함으로써, 동적으로 메모리를 할당하고 해제할 수 있다.
+포인터 멤버를 가지는 클래스도 복사 생성자와 복사 대입 연산자를 명시적으로 정의해야 올바르게 동작한다.
+그리고 아래와 같이, 소멸자와 모든 생성자들을 어울리게 수정해야 올바르게 동작한다.
+ex)	class MyString {
+	public:
+		explicit MyString();
+		explicit MyString(const char *s);
+		MyString(const MyString& rhs);
+		~MyString();
+
+		std::size_t	length() const;
+		const char	*c_str() const;
+
+		MyString&	operator=(const MyString& rhs);
+		MyString&	operator=(const char *s);		// C 스타일의 문자열에 대한 대입 연산자를 오버로딩하여, 임시 객체의 생성과 소멸을 방지한다.
+
+		const char&	operator[](std::size_t i) const;
+		char&		operator[](std::size_t i);		// 코드 중복을 피하기 위하여, 비상수 버전에서 상수 버전을 호출한다.
+
+		bool		operator<(const MyString& rhs) const;
+		bool		operator>(const MyString& rhs) const;	// 코드 중복을 피하기 위하여, < 연산자를 활용해서 정의한다.
+		bool		operator==(const MyString& rhs) const;
+
+		static const std::size_t	CINLIM = 80;
+	private:
+		std::size_t	_len;
+		char		*_stringPtr;
+	};
+
+	std::ostream&	operator<<(std::ostream& os, const MyString& str);
+	std::istream&	operator>>(std::istream& is, MyString& str);
+
+	MyString::MyString()
+		: _len(0), _stringPtr(NULL)		// 널 포인터는 0 또는 NULL로 나타낼 수 있다. C++11은 'nullptr' 키워드를 대안으로 제시한다.
+	{
+		_stringPtr = new char[_len + 1];
+		_stringPtr[0] = '\0';
+	}
+
+	MyString::MyString(const char *s)
+		: _len(std::strlen(s)), _stringPtr(NULL)
+	{
+		_stringPtr = new char[_len + 1];
+		std::strcpy(_stringPtr, s);
+	}
+
+	MyString::MyString(const MyString& rhs)
+		: _len(rhs.length()), _stringPtr(NULL)
+	{
+		_stringPtr = new char[_len + 1];	// 복사 생성자에서 데이터의 주소만 복사하는 것이 아니라 실제 데이터 그 자체를 복사해야 한다. (깊은 복사라고 부른다.)
+		std::strcpy(_stringPtr, rhs.c_str());
+	}
+
+	MyString::~MyString()
+	{						// 소멸자에서 delete []을 사용한다면, 모든 생성자들이 new []을 사용해야 한다.
+		delete [] _stringPtr;			// 그러나, 특정 생성자들에서만 널 포인터로 초기화하는 것은 허용이 된다.
+	}						// 그 이유는 delete 연산자를 널 포인터에 적용할 수 있기 때문이다.
+
+	std::size_t	MyString::length() const
+	{
+		return (_len);
+	}
+
+	const char	*MyString::c_str() const
+	{
+		return (_stringPtr);
+	}
+
+	MyString&	MyString::operator=(const MyString& rhs)
+	{
+		return (*this = rhs.c_str());
+	}
+
+	MyString&	MyString::operator=(const char *s)
+	{
+		char	*pOrig = _stringPtr;		// 자기 대입을 방지하면서 예외 안전성을 확보하기 위하여, 원본 포인터를 백업해놓고 할당이 성공하면 기존 메모리를 해제한다.
+
+		_len = std::strlen(s);
+		_stringPtr = new char[_len + 1];	// 대입 연산자에서도 실제 데이터를 복사해야 한다.
+		std::strcpy(_stringPtr, s);
+		delete [] pOrig;
+		return (*this);
+	}
+
+	const char&	MyString::operator[](std::size_t i) const
+	{
+		return (c_str()[i]);
+	}
+
+	char&	MyString::operator[](std::size_t i)
+	{
+		return (
+			const_cast<char&>(			// 상수 버전 operator[]의 반환 값에서 const를 떼어낸다.
+				static_cast<const MyString&>(	// 상수 버전 operator[]을 호출하기 위하여, MyString&에서 const MyString&로 데이터형 변환을 수행한다.
+					*this)[i]
+				)
+			);
+	}
+
+	bool	MyString::operator<(const MyString& rhs) const
+	{
+		return (std::strcmp(c_str(), rhs.c_str()) < 0);
+	}
+
+	bool	MyString::operator>(const MyString& rhs) const
+	{
+		return (rhs < *this);
+	}
+
+	bool	MyString::operator==(const MyString& rhs) const
+	{
+		return (std::strcmp(c_str(), rhs.c_str()) == 0);
+	}
+
+	std::ostream&	operator<<(std::ostream& os, const MyString& str)
+	{
+		os << str.c_str();
+		return (os);
+	}
+
+	std::istream&	operator>>(std::istream& is, MyString& str)
+	{
+		char	temp[MyString::CINLIM];
+		is.get(temp, MyString::CINLIM);
+		if (is)
+			str = temp;
+		else
+			is.clear();
+		is.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+		return (is);
+	}
+
+일반적으로, new 연산자는 사용자가 요청한 메모리 크기를 충분히 다룰 수 있을 만큼의 메모리 블록을 힙에서 찾는다.
+그런데 new 연산자는, 사용할 위치를 사용자가 지정할 수 있는 위치 지정 new라는 한 가지 변형이 있다.
+위치 지정 new 기능을 사용하려면, new 헤더 파일을 포함시켜야 하며, 아래와 같이 사용할 수 있다.
+위치 지정 new 기능을 사용할 때, 객체의 소멸자를 명시적으로 호출하는 것은 사용자 책임이다.
+ex)	class JustTesting {
+	public:
+		JustTesting(const std::string& str = "Just Testing", int n = 0);
+		~JustTesting();
+	};
+
+	#include <new>
+
+	const std::size_t	BUF = 512;
+	char			*buffer = new char[BUF];
+	JustTesting		*pc1 = NULL, *pc3 = NULL;
+
+	pc1 = new (buffer) JustTesting;						// pc1이 지시하는 객체를 buffer에 놓는다.
+	pc3 = new (buffer + sizeof(JustTesting)) JustTesting("Bad Idea", 6);	// pc3가 지시하는 객체를 위치가 중복되지 않도록 주의하여, buffer의 다른 주소에 놓는다.
+
+	pc3->~JustTesting();							// pc3가 지시하는 객체 소멸
+	pc1->~JustTesting();							// pc1이 지시하는 객체 소멸
+	delete [] buffer;							// buffer 해제
