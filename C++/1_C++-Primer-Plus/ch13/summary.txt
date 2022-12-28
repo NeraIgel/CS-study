@@ -224,6 +224,7 @@ ex)	class TableTennisPlayer {
 그리고, 추상 클래스로부터 상속받는 클래스를 객체를 구체적으로 생성할 수 있다는 의미에서 구체화 클래스(concreate class)라고도 부른다.
 ex)	class BaseEllipse {
 	public:
+		virtual ~BaseEllipse()	{}
 		void	move(int nx, int ny)	{ _x = nx; _y = ny; }	// 추상 클래스도 순수 가상 함수가 아닌 메서드에 대해서는 기본 구현을 가질 수 있다.
 		virtual double	area() const = 0;
 	private:
