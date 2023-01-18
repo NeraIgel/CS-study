@@ -154,7 +154,105 @@ C++는 다중 상속 기능을 추가하면서, 가상 기본 클래스(virtual 
 가상 기본 클래스의 데이터 멤버에 접근하는 속도는 비가상 기본 클래스보다 상대적으로 느리며, 가상 기본 클래스형 객체는 비가상 기본 클래스형보다 크기가 더 크기 때문에, C++에서는 가상 상속이 디폴트가 아니다.
 
 (5) 클래스 템플릿
+클래스 템플릿을 작성하여 포괄적인 클래스 설계도를 생성할 수 있다.
+클래스 템플릿은 하나 이상의 데이터형 매개변수(type template parameter)를 사용할 수 있다.
+클래스 템플릿은 데이터형 매개변수들에 디폴트 값을 제공할 수 있지만, 함수 템플릿은 데이터형 매개변수에 디폴트 값을 제공할 수 없다.
+ex)	template <typename T1 = int, typename T2 = int>
+	class Pair {
+	public:
+		explicit Pair(const T1& a, const T2& b) : _a(a), _b(b)	{}
+		const T1&	first() const	{ return(_a); }
+		const T2&	second() const	{ return(_b); }
+	private:
+		T1	_a;
+		T2	_b;
+	};
 
-(6) 클래스 템플릿 특수화
+클래스 템플릿은 데이터형이 아닌 매개변수를 사용할 수 있다.
+클래스 템플릿과 함수 템플릿 모두 데이터형이 아닌 매개변수에 대해서 디폴트 값을 제공할 수 있다.
+데이터형이 아닌 매개변수(non-type teamplte parameter)를 수식 매개변수라고도 부르며 정수형, 열거형, 참조, 포인터만 수식 매개변수가 될 수 있다.
+수식 매개변수 접근 방식의 가장 큰 단점은, 예를 들어 아래와 같이 작성했을 때, 프로그램이 크기가 다른 객체를 사용하면 컴파일러가 각각의 템플릿 클래스들을 생성한다는 점이다.
+ex)	template <typename T, std::size_t n = 1>
+	class ArrayTP {
+	public:
+		explicit ArrayTP()	{}
+		explicit ArrayTP(const T& v);
+		virtual T&		operator[](std::size_t position);
+		virtual const T&	operator[](std::size_t position) const;
+	private:
+		T	_array[n];
+	};
 
-(7) 클래스 템플릿 구체화
+	template <typename T, std::size_t n>				// 클래스 템플릿의 멤버 함수를 클래스 바깥에서 작성할 때에 템플릿 표시를 앞세워야 한다.
+	ArrayTP<T, n>::ArrayTP(const T& v)
+	{
+		for (std::size_t i = 0; i < n; ++i)
+			_array[i] = v;
+	}
+
+	template <typename T, std::size_t n>
+	T&	ArrayTP<T, n>::operator[](std::size_t position)
+	{
+		return (
+			const_cast<T&>(
+				static_cast<const ArrayTP<T, n>&>(	// 템플릿 클래스형을 클래스 바깥에서 사용할 때 완전한 형식을 표기해야 한다.
+					*this)[position]
+				)
+		   );
+	}
+
+	template <typename T, std::size_t n>
+	const T&	ArrayTP<T, n>::operator[](std::size_t position) const
+	{
+		if (position >= n)
+		{
+			std::cerr << "invalid index." << std::endl;
+			std::exit(EXIT_FAILURE);
+		}
+		return (_array[position]);
+	}
+
+템플릿은 템플릿 매개변수(template template parameter)를 사용할 수 있다.
+ex)	template <template <typename T> class CL, typename U, int z>
+	class Trophy {
+		...
+	};
+
+(6) 클래스 템플릿 구체화
+클래스 템플릿의 정의(구체화)는, 템플릿 클래스형 객체를 선언하고 특정 데이터형을 지정할 때 생성된다.
+예를 들어, 템플릿 클래스형 객체를 아래와 같이 선언하면, 데이터형 매개변수 T를 지정한 데이터형인 double로 모두 대체하는 템플릿 클래스가 생성된다.
+이 경우에, 클래스 이름은 ArrayTP<double, 30>이다. ArrayTP<double, 30>은 그 템플릿의 한 특수화이다. 특별히 컴파일러가 타입 추론을 통해 구체화한다고 해서 암시적 구체화라고 부른다.
+ex)	ArrayTP<double, 30>	*pt;
+
+	pt = new ArrayTP<double, 30>;		// 클래스 템플릿은 함수 템플릿과 다르게, 사용하려는 데이터형을 명시적으로 제공해야 한다.
+
+만약, 특정 타입에 대해 템플릿 클래스를 미리 생성하고 싶다면, 명시적 구체화를 제공할 수 있다.
+이 경우에, 컴파일러는 그 템플릿 클래스형의 어떠한 객체도 요구되지 않더라도 ArrayTP<std::string, 100> 특수화를 생성한다.
+ex)	template class ArrayTP<std::string, 100> {
+		...
+	};
+
+(7) 클래스 템플릿 특수화
+클래스 템플릿을 작성할 때 특정 타입에 대하여 명시적 특수화를 제공할 수 있다.
+명시적 특수화를 제공하면, 특정 타입에 대해 포괄적인 템플릿과 다르게 동작하게 만들 수 있다.
+이 경우에, 컴파일러는 특수화된 템플릿과 포괄적인 템플릿이 둘 다 구체화 요구에 적합한 상황에서 어느 하나를 선택해야 한다면, 특수화된 템플릿을 사용한다.
+ex)	template <>
+	class ArrayTP<char *, std::size_t n = 1> {
+	public:
+		explicit ArrayTP();
+		explicit ArrayTP(const T v);
+		virtual T&		operator[](std::size_t position);
+		virtual const T&	operator[](std::size_t position) const;
+	private:
+		std::string	_array[n];
+	};
+
+클래스 템플릿을 부분적으로 특수화할 수도 있다.
+이 경우에, 컴파일러는 여러 가지 중에서 하나를 선택해야 한다면, 가장 특수화된 템플릿을 사용한다.
+ex)	template <typename T1, typename T2> class Pair { ... };
+	template <typename T1> class Pair<T1, int> { ... };
+	template <> class Pair<int, int> { ... };
+
+	Pair<double, double>	p1(0, 0);	// Pair<T1, T2> 포괄적 버전
+	Pair<double, int>	p2(0, 0);	// Pair<T1, int> 부분 특수화 버전
+	Pair<int, int>		p3(0, 0);	// Pair<int, int> 완전한 명시적 특수화 버전
