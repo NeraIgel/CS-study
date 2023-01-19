@@ -177,8 +177,8 @@ ex)	template <typename T, std::size_t n = 1>
 	public:
 		explicit ArrayTP()	{}
 		explicit ArrayTP(const T& v);
-		virtual T&		operator[](std::size_t position);
-		virtual const T&	operator[](std::size_t position) const;
+		T&		operator[](std::size_t position);
+		const T&	operator[](std::size_t position) const;
 	private:
 		T	_array[n];
 	};
@@ -212,39 +212,33 @@ ex)	template <typename T, std::size_t n = 1>
 		return (_array[position]);
 	}
 
-템플릿은 템플릿 매개변수(template template parameter)를 사용할 수 있다.
+클래스 템플릿은 템플릿 매개변수(template template parameter)를 사용할 수 있다.
+템플릿 매개변수는 표준 템플릿 라이브러리를 구현하기 위해 사용된 기능이며, 템플릿 매개변수에도 디폴트 값을 제공할 수 있다.
 ex)	template <template <typename T> class CL, typename U, int z>
 	class Trophy {
 		...
 	};
 
 (6) 클래스 템플릿 구체화
-클래스 템플릿의 정의(구체화)는, 템플릿 클래스형 객체를 선언하고 특정 데이터형을 지정할 때 생성된다.
-예를 들어, 템플릿 클래스형 객체를 아래와 같이 선언하면, 데이터형 매개변수 T를 지정한 데이터형인 double로 모두 대체하는 템플릿 클래스가 생성된다.
+클래스 템플릿의 정의(구체화)는, 템플릿 클래스형 객체를 요구하고 특정 데이터형을 지정할 때 생성된다.
+예를 들어, 템플릿 클래스형 객체를 아래와 같이 요구하면, 데이터형 매개변수 T를 지정한 데이터형인 double로 모두 대체하는 템플릿 클래스가 생성된다.
 이 경우에, 클래스 이름은 ArrayTP<double, 30>이다. ArrayTP<double, 30>은 그 템플릿의 한 특수화이다. 특별히 컴파일러가 타입 추론을 통해 구체화한다고 해서 암시적 구체화라고 부른다.
 ex)	ArrayTP<double, 30>	*pt;
 
 	pt = new ArrayTP<double, 30>;		// 클래스 템플릿은 함수 템플릿과 다르게, 사용하려는 데이터형을 명시적으로 제공해야 한다.
+	delete pt;
 
 만약, 특정 타입에 대해 템플릿 클래스를 미리 생성하고 싶다면, 명시적 구체화를 제공할 수 있다.
-이 경우에, 컴파일러는 그 템플릿 클래스형의 어떠한 객체도 요구되지 않더라도 ArrayTP<std::string, 100> 특수화를 생성한다.
-ex)	template class ArrayTP<std::string, 100> {
-		...
-	};
+아래와 같은 경우에, 컴파일러는 그 템플릿 클래스형의 어떠한 객체도 요구되지 않더라도 ArrayTP<std::string, 100> 특수화를 생성한다.
+ex)	template class ArrayTP<std::string, 100>;
 
 (7) 클래스 템플릿 특수화
 클래스 템플릿을 작성할 때 특정 타입에 대하여 명시적 특수화를 제공할 수 있다.
-명시적 특수화를 제공하면, 특정 타입에 대해 포괄적인 템플릿과 다르게 동작하게 만들 수 있다.
+명시적 특수화를 제공하면, 특정 타입에 대해 포괄적인 템플릿과 다르게 동작하는 특수화된 템플릿 클래스가 생성된다.
 이 경우에, 컴파일러는 특수화된 템플릿과 포괄적인 템플릿이 둘 다 구체화 요구에 적합한 상황에서 어느 하나를 선택해야 한다면, 특수화된 템플릿을 사용한다.
 ex)	template <>
-	class ArrayTP<char *, std::size_t n = 1> {
-	public:
-		explicit ArrayTP();
-		explicit ArrayTP(const T v);
-		virtual T&		operator[](std::size_t position);
-		virtual const T&	operator[](std::size_t position) const;
-	private:
-		std::string	_array[n];
+	class ArrayTP<const char *, 100> {
+		...
 	};
 
 클래스 템플릿을 부분적으로 특수화할 수도 있다.
@@ -253,6 +247,6 @@ ex)	template <typename T1, typename T2> class Pair { ... };
 	template <typename T1> class Pair<T1, int> { ... };
 	template <> class Pair<int, int> { ... };
 
-	Pair<double, double>	p1(0, 0);	// Pair<T1, T2> 포괄적 버전
-	Pair<double, int>	p2(0, 0);	// Pair<T1, int> 부분 특수화 버전
-	Pair<int, int>		p3(0, 0);	// Pair<int, int> 완전한 명시적 특수화 버전
+	Pair<double, double>	p1;		// Pair<T1, T2> 포괄적 버전
+	Pair<double, int>	p2;		// Pair<T1, int> 부분 특수화 버전
+	Pair<int, int>		p3;		// Pair<int, int> 완전한 특수화 버전
