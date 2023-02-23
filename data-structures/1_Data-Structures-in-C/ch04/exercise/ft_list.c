@@ -1,143 +1,206 @@
-#include "ft_list.h"
 #include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include "ft_list.h"
 
-t_list	*ft_lstcreate(void)
+void	ft_list_create(t_list *l)
 {
-	t_list	*lst;
-
-	lst = (t_list *)malloc(sizeof(t_list));
-	if (!lst)
-		return (NULL);
-	ft_lstinit(lst);
-	return (lst);
+	l->head = malloc(sizeof(__t_node));
+	if (!(l->head))
+		ft_list_error(l, "list allocation error");
+	__lstinit(l->head);
+	l->size = 0U;
 }
 
-void	ft_lstinit(t_list *lst)
+void	ft_list_destroy(t_list *l)
 {
-	if (lst)
+	if (l->head)
 	{
-		lst->head = NULL;
-		lst->size = 0;
+		ft_list_clear(l);
+		free(l->head);
+		l->head = NULL;
 	}
 }
 
-void	ft_lstclear(t_list **lst)
+void	ft_list_clear(t_list *l)
 {
-	int		i;
-
-	for (i = 0; i < ft_lstsize(*lst); i++)
-		ft_lstdel(*lst, i);
-	free(*lst);
-	*lst = NULL;
+	while (!ft_list_empty(l))
+		ft_list_pop_front(l);
 }
 
-// --------------------------------
-
-int	ft_lstsize(t_list *lst)
+void	ft_list_error(t_list *l, const char *errormsg)
 {
-	return (lst ? lst->size : -1);
+	if (errormsg)
+		write(STDERR_FILENO, errormsg, strlen(errormsg));
+	ft_list_destroy(l);
+	exit(EXIT_FAILURE);
 }
 
-bool	ft_lstisempty(t_list *lst)
+size_t	ft_list_size(const t_list *l)
 {
-	return (lst ? !(lst->head) : true);
+	return (l->size);
 }
 
-// --------------------------------
-
-void	ft_lstadd_last(t_list *lst, void *content)
+bool	ft_list_empty(const t_list *l)
 {
-	ft_lstadd(lst, ft_lstsize(lst), content);
+	return (l->size == 0U);
 }
 
-void	ft_lstadd_first(t_list *lst, void *content)
+void	ft_list_iter(const t_list *l, void (*f)(void *))
 {
-	ft_lstadd(lst, 0, content);
+	__lstiter(l->head, f);
 }
 
-void	ft_lstadd(t_list *lst, int pos, void *content)
+static void	*__node_error(const char *errormsg)
 {
-	t_node	*new;
+	if (errormsg)
+		write(STDERR_FILENO, errormsg, strlen(errormsg));
+	return (NULL);
+}
 
-	if (!lst || pos < 0 || pos > lst->size)
-		return ;
-	new = ft_create_node(content);
+static __t_node	*__node_make(void *content, size_t n)
+{
+	__t_node	*new;
+
+	if (!content || !n)
+		return (__node_error("list content error"));
+	new = __lstnew(NULL);
 	if (!new)
-		return ;
-	ft_insert_node(&(lst->head), ft_lstget(lst, pos - 1), new);
-	(lst->size)++;
+		return (__node_error("list allocation error"));
+	new->content = malloc(n);
+	if (!(new->content))
+	{
+		free(new);
+		return (__node_error("list allocation error"));
+	}
+	memcpy(new->content, content, n);
+	return (new);
 }
 
-// --------------------------------
-
-void	ft_lstdel_last(t_list *lst)
+void	ft_list_push_back(t_list *l, void *content, size_t n)
 {
-	ft_lstdel(lst, ft_lstsize(lst) - 1);
+	__t_node	*new;
+
+	new = __node_make(content, n);
+	if (!new)
+		ft_list_error(l, NULL);
+	__lstadd_back(l->head, new);
+	l->size++;
 }
 
-void	ft_lstdel_first(t_list *lst)
+void	ft_list_push_front(t_list *l, void *content, size_t n)
 {
-	ft_lstdel(lst, 0);
+	__t_node	*new;
+
+	new = __node_make(content, n);
+	if (!new)
+		ft_list_error(l, NULL);
+	__lstadd_front(l->head, new);
+	l->size++;
 }
 
-void	ft_lstdel(t_list *lst, int pos)
+void	ft_list_insert(t_list *l, size_t pos, void *content, size_t n)
 {
-	if (ft_lstisempty(lst) || pos < 0 || pos > lst->size)
-		return ;
-	ft_remove_node(&(lst->head), ft_lstget(lst, pos - 1));
-	(lst->size)--;
+	size_t		size;
+	__t_node	*new;
+	__t_node	*prev;
+
+	size = ft_list_size(l);
+	if (!(pos < size))
+		ft_list_error(l, "list position error");
+	new = __node_make(content, n);
+	if (!new)
+		ft_list_error(l, NULL);
+	if (pos + 1 == size)
+		__lstadd_back(l->head, new);
+	else if (pos == 0U)
+		__lstadd_front(l->head, new);
+	else
+	{
+		prev = __lstat(l->head, pos - 1);
+		__lstadd(prev, new);
+	}
+	l->size++;
 }
 
-// --------------------------------
-
-t_node	*ft_lstget_last(t_list *lst)
+static void	__content_del(void *content)
 {
-	return (ft_lstget(lst, ft_lstsize(lst) - 1));
+	free(content);
 }
 
-t_node	*ft_lstget_first(t_list *lst)
+void	ft_list_pop_back(t_list *l)
 {
-	return (ft_lstget(lst, 0));
+	__t_node	*node;
+
+	if (ft_list_empty(l))
+		ft_list_error(l, "list empty");
+	node = __lstlast(l->head);
+	__lstdelone(node, __content_del);
+	l->size--;
 }
 
-t_node	*ft_lstget(t_list *lst, int pos)
+void	ft_list_pop_front(t_list *l)
 {
-	t_node	*node;
-	int		i;
+	__t_node	*node;
 
-	if (ft_lstisempty(lst) || pos < 0 || pos > lst->size)
-		return (NULL);
-	for (node = lst->head, i = 0; i < pos; i++)
-		node = node->next;
-	return (node);
+	if (ft_list_empty(l))
+		ft_list_error(l, "list empty");
+	node = __lstfirst(l->head);
+	__lstdelone(node, __content_del);
+	l->size--;
 }
 
-// --------------------------------
-
-void	ft_lstset_last(t_list *lst, void *content)
+void	ft_list_erase(t_list *l, size_t pos)
 {
-	ft_lstset(lst, ft_lstsize(lst) - 1, content);
+	size_t		size;
+	__t_node	*node;
+
+	size = ft_list_size(l);
+	if (!(pos < size))
+		ft_list_error(l, "list position error");
+	if (pos + 1 == size)
+		node = __lstlast(l->head);
+	else if (pos == 0U)
+		node = __lstfirst(l->head);
+	else
+		node = __lstat(l->head, pos);
+	__lstdelone(node, __content_del);
+	l->size--;
 }
 
-void	ft_lstset_first(t_list *lst, void *content)
+void	*ft_list_back(t_list *l)
 {
-	ft_lstset(lst, 0, content);
+	__t_node	*node;
+
+	if (ft_list_empty(l))
+		ft_list_error(l, "list empty");
+	node = __lstlast(l->head);
+	return (node->content);
 }
 
-void	ft_lstset(t_list *lst, int pos, void *content)
+void	*ft_list_front(t_list *l)
 {
-	t_node	*node;
+	__t_node	*node;
 
-	node = ft_lstget(lst, pos);
-	if (!node)
-		return ;
-	node->content = content;
+	if (ft_list_empty(l))
+		ft_list_error(l, "list empty");
+	node = __lstfirst(l->head);
+	return (node->content);
 }
 
-// --------------------------------
-
-void	ft_lstiter(t_list *lst, void (*f)(void *))
+void	*ft_list_at(t_list *l, size_t pos)
 {
-	if (lst)
-		ft_iter_node(lst->head, f);
+	size_t		size;
+	__t_node	*node;
+
+	size = ft_list_size(l);
+	if (!(pos < size))
+		ft_list_error(l, "list position error");
+	if (pos + 1 == size)
+		node = __lstlast(l->head);
+	else if (pos == 0U)
+		node = __lstfirst(l->head);
+	else
+		node = __lstat(l->head, pos);
+	return (node->content);
 }

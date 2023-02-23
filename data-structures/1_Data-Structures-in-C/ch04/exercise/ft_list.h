@@ -1,39 +1,32 @@
+#pragma once
 #ifndef FT_LIST_H
 # define FT_LIST_H
 
-//# include "ft_slinkedlist.h"
-# include "ft_dlinkedlist.h"
+# include <stddef.h>
 # include <stdbool.h>
+# include "__list.h"
 
 typedef struct s_list
 {
-	t_node	*head;
-	int		size;
+	__t_node	*head;
+	size_t		size;
 }	t_list;
 
-t_list	*ft_lstcreate(void);
-void	ft_lstinit(t_list *lst);
-void	ft_lstclear(t_list **lst);
-
-int		ft_lstsize(t_list *lst);
-bool	ft_lstisempty(t_list *lst);
-
-void	ft_lstadd_last(t_list *lst, void *content);
-void	ft_lstadd_first(t_list *lst, void *content);
-void	ft_lstadd(t_list *lst, int pos, void *content);
-
-void	ft_lstdel_last(t_list *lst);
-void	ft_lstdel_first(t_list *lst);
-void	ft_lstdel(t_list *lst, int pos);
-
-t_node	*ft_lstget_last(t_list *lst);
-t_node	*ft_lstget_first(t_list *lst);
-t_node	*ft_lstget(t_list *lst, int pos);
-
-void	ft_lstset_last(t_list *lst, void *content);
-void	ft_lstset_first(t_list *lst, void *content);
-void	ft_lstset(t_list *lst, int pos, void *content);
-
-void	ft_lstiter(t_list *lst, void (*f)(void *));
+void	ft_list_create(t_list *l);
+void	ft_list_destroy(t_list *l);
+void	ft_list_clear(t_list *l);
+void	ft_list_error(t_list *l, const char *errormsg);
+size_t	ft_list_size(const t_list *l);
+bool	ft_list_empty(const t_list *l);
+void	ft_list_iter(const t_list *l, void (*f)(void *));
+void	ft_list_push_back(t_list *l, void *content, size_t n);
+void	ft_list_push_front(t_list *l, void *content, size_t n);
+void	ft_list_insert(t_list *l, size_t pos, void *content, size_t n);
+void	ft_list_pop_back(t_list *l);
+void	ft_list_pop_front(t_list *l);
+void	ft_list_erase(t_list *l, size_t pos);
+void	*ft_list_back(t_list *l);
+void	*ft_list_front(t_list *l);
+void	*ft_list_at(t_list *l, size_t pos);
 
 #endif
