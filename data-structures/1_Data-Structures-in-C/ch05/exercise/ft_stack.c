@@ -46,7 +46,7 @@ bool	ft_stack_empty(const t_stack *s)
 	return (s->size == 0U);
 }
 
-void	ft_stack_push(t_stack *s, void *content, size_t n)
+void	ft_stack_push(t_stack *s, const void *content, size_t n)
 {
 	__t_node	*new;
 

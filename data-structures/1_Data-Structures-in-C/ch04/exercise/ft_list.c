@@ -58,7 +58,7 @@ static void	*__node_error(const char *errormsg)
 	return (NULL);
 }
 
-static __t_node	*__node_make(void *content, size_t n)
+static __t_node	*__node_make(const void *content, size_t n)
 {
 	__t_node	*new;
 
@@ -77,7 +77,7 @@ static __t_node	*__node_make(void *content, size_t n)
 	return (new);
 }
 
-void	ft_list_push_back(t_list *l, void *content, size_t n)
+void	ft_list_push_back(t_list *l, const void *content, size_t n)
 {
 	__t_node	*new;
 
@@ -88,7 +88,7 @@ void	ft_list_push_back(t_list *l, void *content, size_t n)
 	l->size++;
 }
 
-void	ft_list_push_front(t_list *l, void *content, size_t n)
+void	ft_list_push_front(t_list *l, const void *content, size_t n)
 {
 	__t_node	*new;
 
@@ -99,7 +99,7 @@ void	ft_list_push_front(t_list *l, void *content, size_t n)
 	l->size++;
 }
 
-void	ft_list_insert(t_list *l, size_t pos, void *content, size_t n)
+void	ft_list_insert(t_list *l, size_t pos, const void *content, size_t n)
 {
 	size_t		size;
 	__t_node	*new;

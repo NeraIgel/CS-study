@@ -18,7 +18,7 @@ void	ft_stack_clear(t_stack *s);
 void	ft_stack_error(t_stack *s, const char *errormsg);
 size_t	ft_stack_size(const t_stack *s);
 bool	ft_stack_empty(const t_stack *s);
-void	ft_stack_push(t_stack *s, void *content, size_t n);
+void	ft_stack_push(t_stack *s, const void *content, size_t n);
 void	ft_stack_pop(t_stack *s);
 void	*ft_stack_top(t_stack *s);
 
